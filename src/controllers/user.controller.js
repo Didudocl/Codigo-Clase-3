@@ -60,7 +60,7 @@ export async function getUsers(req, res) {
 
     if (!users) {
       return res.status(404).json({
-        message: 'No se encontraron usuarios',
+        message: 'No hay usuarios',
         data: null,
       });
     }
@@ -70,55 +70,53 @@ export async function getUsers(req, res) {
       data: users,
     });
   } catch (error) {
-    console.error('Error al obtener un usuarios, el error: ', error);
+    console.error('Error al obtener los usuarios, el error: ', error);
   }
 }
 
 export async function updateUser(req, res) {
   try {
-    const { rut, id, email } = req.query;
-    const { body } = req;
-
-    const { error: queryError } = userQueryValidation.validate({
-      rut,
-      id,
-      email,
-    });
-
-    if (queryError) {
-      return handleErrorClient(res, 400, queryError.message);
-    }
-
-    const { error: bodyError } = userBodyValidation.validate(body);
-
-    if (bodyError) return handleErrorClient(res, 400, bodyError.message);
-
-    const [user, userError] = await updateUserService({ rut, id, email }, body);
-
-    if (userError) return handleErrorClient(res, 400, userError);
-
-    handleSuccess(res, 200, 'Usuario modificado correctamente', user);
-  } catch (error) {
-    handleErrorServer(res, 500, error.message);
-  }
-}
-
-export async function deleteUser(req, res) {
-  try {
-    const userRepository = AppDataSource.getRepository(User);
-
     const id = req.params.id;
+    const user = req.body;
 
-    const userFound = await deleteUserService(id);
+    const { value, error } = userBodyValidation.validate(user);
 
-    if (!userFound) {
+    if (error)
+      return res.status(400).json({
+        message: error.message,
+      });
+
+    const userUpdated = await updateUserService(id, value);
+
+    if (!userUpdated) {
       return res.status(404).json({
         message: 'Usuario no encontrado',
         data: null,
       });
     }
 
-    const userDeleted = await userRepository.remove(userFound);
+    res.status(200).json({
+      message: 'Usuario actualizado correctamente',
+      data: userUpdated,
+    });
+  } catch (error) {
+    console.error('Error al actualizar un usuario: ', error);
+    res.status(500).json({ message: 'Error interno en el servidor' });
+  }
+}
+
+export async function deleteUser(req, res) {
+  try {
+    const id = req.params.id;
+
+    const userDeleted = await deleteUserService(id);
+
+    if (!userDeleted) {
+      return res.status(404).json({
+        message: 'Usuario no encontrado',
+        data: null,
+      });
+    }
 
     res.status(200).json({
       message: 'Usuario eliminado correctamente',

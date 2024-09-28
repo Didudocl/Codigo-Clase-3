@@ -50,87 +50,46 @@ export async function getUsersService() {
 
     if (!users || users.length === 0) return [null, 'No hay usuarios'];
 
-    const usersData = users.map(({ password, ...user }) => user);
-
-    return [usersData, null];
+    return users;
   } catch (error) {
     console.error('Error al obtener a los usuarios:', error);
-    return [null, 'Error interno del servidor'];
   }
 }
 
 export async function updateUserService(query, body) {
   try {
-    const { id, rut, email } = query;
-
     const userRepository = AppDataSource.getRepository(User);
 
     const userFound = await userRepository.findOne({
-      where: [{ id: id }, { rut: rut }, { email: email }],
+      where: { id: query.id },
     });
 
     if (!userFound) return [null, 'Usuario no encontrado'];
 
-    const existingUser = await userRepository.findOne({
-      where: [{ rut: body.rut }, { email: body.email }],
-    });
+    userRepository.merge(userFound, body);
 
-    if (existingUser && existingUser.id !== userFound.id) {
-      return [null, 'Ya existe un usuario con el mismo rut o email'];
-    }
-
-    const matchPassword = await comparePassword(
-      body.password,
-      userFound.password
-    );
-
-    if (!matchPassword) return [null, 'La contraseña no coincide'];
-
-    const updatedParam = id ? { id } : rut ? { rut } : { email };
-
-    await userRepository.update(updatedParam, {
-      nombreCompleto: body.nombreCompleto,
-      rut: body.rut,
-      email: body.email,
-      rol: body.rol,
-      password: await encryptPassword(body.newPassword || body.password),
-      updatedAt: new Date(),
-    });
-
-    const userData = await userRepository.findOne({
-      where: [updatedParam],
-    });
-
-    const { password, ...userUpdated } = userData;
+    const userUpdated = await userRepository.save(userFound);
 
     return [userUpdated, null];
   } catch (error) {
-    console.error('Error al modificar un usuario:', error);
+    console.error('Error al actualizar un usuario:', error);
     return [null, 'Error interno del servidor'];
   }
 }
 
-export async function deleteUserService(query) {
+export async function deleteUserService(id) {
   try {
-    const { id, rut, email } = query;
-
     const userRepository = AppDataSource.getRepository(User);
 
     const userFound = await userRepository.findOne({
-      where: [{ id: id }, { rut: rut }, { email: email }],
+      where: { id: id },
     });
 
     if (!userFound) return [null, 'Usuario no encontrado'];
 
-    if (userFound.rol === 'administrador') {
-      return [null, 'No se puede eliminar un usuario con rol de administrador'];
-    }
+    await userRepository.remove(userFound);
 
-    const userDeleted = await userRepository.remove(userFound);
-
-    const { password, ...dataUser } = userDeleted;
-
-    return [dataUser, null];
+    return [userFound, null];
   } catch (error) {
     console.error('Error al eliminar un usuario:', error);
     return [null, 'Error interno del servidor'];
