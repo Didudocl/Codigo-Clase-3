@@ -41,3 +41,65 @@ export async function getUserService(id) {
         console.error("Error al obtener el usuario:", error);
     }
 }
+
+export async function getUsersService(){
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const usersFound = await userRepository.find()
+
+        if (!usersFound) {
+            return null;
+        }
+
+        return usersFound;
+    } catch (error) {
+        console.error("Error al obtener el usuario:", error);
+    }
+}
+
+export async function updateUserService(id,user) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const userFound = await userRepository.findOne({
+            where: {id}
+        });
+
+        if(!userFound) {
+            return null;
+        }
+
+        await userRepository.update(id, user);
+
+        const updateUser = await userRepository.findOne({
+            where: [{
+                id: id
+            }]
+        });
+
+        return updateUser;
+    } catch (error) {
+        console.error('Error al actualizar un usuario: ', error);
+    }
+}
+
+export async function deleteUserService(id) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const userFound = await userRepository.findOne({
+            where: {id}
+        });
+    
+        if(!userFound) {
+            return null;
+        }
+    
+        await userRepository.remove(userFound);
+    
+        return userFound;
+    } catch (error) {
+        console.error("Error al eliminar un usuario: ", error);
+    }
+}

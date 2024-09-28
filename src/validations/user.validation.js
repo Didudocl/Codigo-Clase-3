@@ -27,7 +27,7 @@ export const userBodyValidation = Joi.object({
     rut: Joi.string()
         .min(9)
         .max(12)
-        .pattern(/^\d{1,2}(\.\d{3}){2}-[\dkK]$|^\d{7,8}-[\dkK]$/)
+        .pattern(/^(0?[1-9]|1\d|2[0-9])\.\d{3}\.\d{3}-[\dkK]$|^\d{7,8}-[\dkK]$/) // xx.xxx.xxx-x o xxxxxxxx-x || Máximo rut 8 dígitos y tipo 29.999.999-9
         .required()
         .messages({
             "string.empty": "El rut no puede estar vacío.",
@@ -36,6 +36,7 @@ export const userBodyValidation = Joi.object({
             "string.min": "El rut debe tener como mínimo 9 caracteres.",
             "string.max": "El rut debe tener como máximo 12 caracteres",
             "string.pattern.base": "El rut debe ser con el formato xx.xxx.xxx-x o xxxxxxxx-x"
+            
         }),
     email: Joi.string()
         .min(15)

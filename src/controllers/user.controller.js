@@ -2,7 +2,7 @@
 import User from '../entity/user.entity.js';
 import { AppDataSource } from '../config/configDb.js';
 import { userBodyValidation } from '../validations/user.validation.js';
-import { createUserService, getUserService } from '../services/user.service.js';
+import { createUserService, getUserService, getUsersService, updateUserService, deleteUserService } from '../services/user.service.js';
 
 
 export async function createUser(req, res) {
@@ -51,9 +51,8 @@ export async function getUser(req, res) {
 
 export async function getUsers(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
 
-        const users = await userRepository.find();
+        const users = await getUsersService();
 
         if(!users || users.length === 0) {
             return res.status(404).json({
@@ -67,39 +66,34 @@ export async function getUsers(req, res) {
             data: users
         })
     } catch (error) {
-        console.error('Error al obtener un usuarios, el error: ', error);
+        console.error('Error al obtener usuarios, el error: ', error);
     }
 }
 
 export async function updateUser(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
-
+    
         const id = req.params.id;
         const user = req.body;
 
-        const userFound = await userRepository.findOne({
-            where: {id}
-        });
+        const { value, error } = userBodyValidation.validate(user);
 
-        if(!userFound) {
+        if(error) return res.status(400).json({
+            message: error.message
+        })
+        
+        const userUpdated = await updateUserService(id, value);
+
+        if(!userUpdated) {
             return res.status(404).json({
                 message: "Usuario no encontrado",
                 data: null
             });
         }
 
-        await userRepository.update(id, user);
-
-        const userData = await userRepository.findOne({
-            where: [{
-                id: id
-            }]
-        });
-
         res.status(200).json({
             message: "Usuario actualizado correctamente",
-            data: userData
+            data: userUpdated
         })
     } catch (error) {
         console.error("Error al actualizar un usuario: ", error);
@@ -109,22 +103,17 @@ export async function updateUser(req, res) {
 
 export async function deleteUser(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
 
         const id = req.params.id;
 
-        const userFound = await userRepository.findOne({
-            where: {id}
-        });
+        const userDeleted = await deleteUserService(id);
 
-        if(!userFound) {
+        if(!userDeleted) {
             return res.status(404).json({
                 message: "Usuario no encontrado",
                 data: null
             });
         }
-
-        const userDeleted = await userRepository.remove(userFound);
 
         res.status(200).json({
             message: "Usuario eliminado correctamente",
