@@ -41,3 +41,56 @@ export async function getUserService(id) {
         console.error("Error al obtener el usuario:", error);
     }
 }
+
+export async function getUsersService() { //? Obtener todos los usuarios registrados.
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const users = await userRepository.find();
+
+        if (!users) return [null, "No hay usuarios registrados"];
+
+        users.forEach(user => { //? Formatear las fechas de creación y actualización. ForEach para recorrer cada elemento de un array.
+            user.createdAt = formatToLocalTime(user.createdAt);
+            user.updatedAt = formatToLocalTime(user.updatedAt);
+        });
+
+        return [users, null];
+    } catch (error) {
+        console.error("Error al obtener los usuarios: ", error);
+    }
+}
+
+export async function updateUserService(query, body) { //? Actualizar un usuario por su id.
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const userFound = await userRepository.findOne({ where: { id: query } });
+
+        if (!userFound) return [null, "Usuario no encontrado"];
+
+        userRepository.merge(userFound, body); //? Unir los datos del usuario encontrado con los datos del cuerpo de la solicitud.
+
+        const userUpdated = await userRepository.save(userFound);
+
+        return [userUpdated, null];
+    } catch (error) {
+        console.error("Error al actualizar un usuario: ", error);
+    }
+}
+
+export async function deleteUserService(id) { //? Eliminar un usuario por su id.
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const userFound = await userRepository.findOne({ where: { id } });
+
+        if (!userFound) return [null, "El usuario no existe"];
+
+        await userRepository.remove(userFound);
+
+        return [true, null];
+    } catch (error) {
+        console.error("Error al eliminar un usuario: ", error);
+    }
+}
