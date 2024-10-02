@@ -1,8 +1,7 @@
 "use strict";
 import User from '../entity/user.entity.js';
 import { AppDataSource } from '../config/configDb.js';
-import { formatToLocalTime } from '../utils/formatDate.js';
-import { validateRut } from '../validations/user.validation.js';  
+import { formatToLocalTime } from '../utils/formatDate.js'
 
 export async function createUserService(dataUser) {
     try {
@@ -43,34 +42,44 @@ export async function getUserService(id) {
     }
 }
 
-export async function updateUserService(id, dataUser) {
+export async function getUsersService() {
     try {
         const userRepository = AppDataSource.getRepository(User);
 
-        const userFound = await userRepository.findOne({
-            where: { id }
+        const users = await userRepository.find();
+
+        if (!users || users.length === 0) {
+            return [];
+        }
+
+        users.forEach(user => {
+            user.createdAt = formatToLocalTime(user.createdAt);
+            user.updatedAt = formatToLocalTime(user.updatedAt);
         });
 
-        if (!userFound) {
-            return null;
-        }
-        if (!validateRut(dataUser.rut)) {
-            throw new Error("RUT inválido");
-        }
-
-        userFound.nombreCompleto = dataUser.nombreCompleto;
-        userFound.rut = dataUser.rut;
-        userFound.email = dataUser.email;
-
-        const userUpdated = await userRepository.save(userFound);
-
-        userUpdated.createdAt = formatToLocalTime(userUpdated.createdAt);
-        userUpdated.updatedAt = formatToLocalTime(userUpdated.updatedAt);
-
-        return userUpdated;
+        return users;
     } catch (error) {
-        console.error("Error al actualizar el usuario:", error);
-        throw error;  
+        console.error('Error al obtener los usuarios: ', error);
+        throw new Error('No se pudo obtener la lista de usuarios');
+    }
+}
+
+export async function updateUserService(id, data) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        let user = await userRepository.findOne({ where: { id } });
+
+        if (!user) {
+            throw new Error('Usuario no encontrado');
+        }
+
+        userRepository.merge(user, data);
+        const updatedUser = await userRepository.save(user);
+
+        return updatedUser;
+    } catch (error) {
+        console.error('Error al actualizar el usuario: ', error);
     }
 }
 
@@ -78,18 +87,15 @@ export async function deleteUserService(id) {
     try {
         const userRepository = AppDataSource.getRepository(User);
 
-        const userFound = await userRepository.findOne({
-            where: { id }
-        });
+        const user = await userRepository.findOne({ where: { id } });
 
-        if (!userFound) {
-            return null;
+        if (!user) {
+            throw new Error('Usuario no encontrado');
         }
 
-        const userDeleted = await userRepository.remove(userFound);
-
-        return userDeleted;
+        await userRepository.remove(user);
+        return user;
     } catch (error) {
-        console.error("Error al eliminar el usuario:", error);
+        console.error('Error al eliminar el usuario: ', error);
     }
 }
