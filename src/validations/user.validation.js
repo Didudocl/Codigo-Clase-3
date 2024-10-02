@@ -27,7 +27,7 @@ export const userBodyValidation = Joi.object({
     rut: Joi.string()
         .min(9)
         .max(12)
-        .pattern(/^\d{1,2}(\.\d{3}){2}-[\dkK]$|^\d{7,8}-[\dkK]$/)
+        .pattern(/^(1\d{6}|2\d{7}|[1-9]\d{6})-(\d|[kK])$/)  // Formato xx.xxx.xxx-x o xxxxxxxx-x // Nueva expresión regular para el rango 1.000.000 a 29.999.999
         .required()
         .messages({
             "string.empty": "El rut no puede estar vacío.",
@@ -45,6 +45,46 @@ export const userBodyValidation = Joi.object({
         .messages({
             "string.empty": "El email no puede estar vacío.",
             "any.required": "El email es obligatorio",
+            "string.base": "El email debe tener formato con dominio apropiado.",
+            "string.min": "El email debe tener como mínimo 15 caracteres.",
+            "string.max": "El email debe tener como máximo 30 caracteres",
+        })
+        .custom(domainEmailValidator, "Validación dominio email"),
+});
+
+// Validación para la actualización de usuario (campos opcionales)
+export const userUpdateValidation = Joi.object({
+    nombreCompleto: Joi.string()
+        .min(3)
+        .max(30)
+        .pattern(new RegExp("^[a-zA-Z\\s]+$"))
+        .optional()  // En la actualización, este campo es opcional
+        .messages({
+            "string.empty": "El nombre completo no puede estar vacío.",
+            "string.base": "El nombre completo debe ser de tipo string.",
+            "string.min": "El nombre completo debe tener como mínimo 3 caracteres.",
+            "string.max": "El nombre completo debe tener como máximo 30 caracteres.",
+            "string.pattern.base": "El nombre completo permite solo letras de la a-z."
+        }),
+    rut: Joi.string()
+        .min(9)
+        .max(12)
+        .pattern(/^\d{1,2}(\.\d{3}){2}-[\dkK]$|^\d{7,8}-[\dkK]$/)
+        .optional()  // En la actualización, este campo es opcional
+        .messages({
+            "string.empty": "El rut no puede estar vacío.",
+            "string.base": "El rut debe ser de tipo string.",
+            "string.min": "El rut debe tener como mínimo 9 caracteres.",
+            "string.max": "El rut debe tener como máximo 12 caracteres",
+            "string.pattern.base": "El rut debe ser con el formato xx.xxx.xxx-x o xxxxxxxx-x"
+        }),
+    email: Joi.string()
+        .min(15)
+        .max(30)
+        .optional()  // En la actualización, este campo es opcional
+        .email()
+        .messages({
+            "string.empty": "El email no puede estar vacío.",
             "string.base": "El email debe tener formato con dominio apropiado.",
             "string.min": "El email debe tener como mínimo 15 caracteres.",
             "string.max": "El email debe tener como máximo 30 caracteres",
