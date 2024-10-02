@@ -24,10 +24,10 @@ export const userBodyValidation = Joi.object({
             "string.max": "El nombre completo debe tener como máximo 30 caracteres.",
             "string.pattern.base": "El nombre completo permite solo letras de la a-z."
         }),
-    rut: Joi.string()
+        rut: Joi.string()
         .min(9)
         .max(12)
-        .pattern(/^\d{1,2}(\.\d{3}){2}-[\dkK]$|^\d{7,8}-[\dkK]$/)
+        .pattern(/^(1\d{7}|2[0-8]\d{6}|29\d{6})-[\dkK]$/)
         .required()
         .messages({
             "string.empty": "El rut no puede estar vacío.",
