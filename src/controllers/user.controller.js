@@ -2,7 +2,7 @@
 import User from '../entity/user.entity.js';
 import { AppDataSource } from '../config/configDb.js';
 import { userBodyValidation } from '../validations/user.validation.js';
-import { createUserService, getUserService } from '../services/user.service.js';
+import { createUserService, getUserService, getAllUserService, updateUserService, deleteUserService} from '../services/user.service.js';
 
 
 export async function createUser(req, res) {
@@ -51,23 +51,21 @@ export async function getUser(req, res) {
 
 export async function getUsers(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
+        const usersFound = await getAllUserService();
 
-        const users = await userRepository.find();
-
-        if(!users || users.length === 0) {
+        if(!usersFound) {
             return res.status(404).json({
-                message: "No se encontraron usuarios",
+                message: "Usuarios no encontrados",
                 data: null
             })
         }
 
         res.status(200).json({
             message: "Usuarios encontrados",
-            data: users
+            data: userFound
         })
     } catch (error) {
-        console.error('Error al obtener un usuarios, el error: ', error);
+        console.error('Error al obtener los usuarios, el error: ', error);
     }
 }
 
@@ -78,11 +76,15 @@ export async function updateUser(req, res) {
         const id = req.params.id;
         const user = req.body;
 
-        const userFound = await userRepository.findOne({
-            where: {id}
-        });
+        const { value, error } = userBodyValidation.validate(user);
 
-        if(!userFound) {
+        if(error) return res.status(400).json({
+            message: error.message
+        })
+
+        const userUpdate = await updateUserService(id, user);
+
+        if(!userUpdate) {
             return res.status(404).json({
                 message: "Usuario no encontrado",
                 data: null
@@ -124,7 +126,7 @@ export async function deleteUser(req, res) {
             });
         }
 
-        const userDeleted = await userRepository.remove(userFound);
+        const userDeleted = await deleteUserService(userFound);
 
         res.status(200).json({
             message: "Usuario eliminado correctamente",
