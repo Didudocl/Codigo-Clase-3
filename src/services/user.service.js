@@ -41,3 +41,48 @@ export async function getUserService(id) {
         console.error("Error al obtener el usuario:", error);
     }
 }
+
+export async function updateUserService(id) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+    
+        const userFound = await userRepository.findOne({
+            where:[{
+                id:id
+            }]
+        });
+        if (!userFound) {
+            return null;
+            }
+
+            await userRepository.update(id, userData);
+
+            const updatedUser = await userRepository.findOne({
+                where: { id: id }
+            });
+
+        return updatedUser;
+    } catch (error) {
+        console.error("Error al actualizar el usuario: ",error);
+        res.status(500).json({message:"Error interno del servidor" });
+    }
+        
+    }
+export async function deleteUserService(id) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const userFound = await userRepository.findOne({
+            where: { id: id }
+        });
+        if (!userFound) {
+            return null; 
+        }
+        await userRepository.remove(userFound);
+
+        return userFound;
+    } catch (error) {
+        
+    }
+    
+}
