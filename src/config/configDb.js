@@ -19,6 +19,6 @@ export async function connectDB() {
         await AppDataSource.initialize();
         console.log("=> Conexión a la base de datos exitosa!");
     } catch (error) {
-        console.error("Error al conectase a la base de datos: ", error);
+        console.error("Error al conectarse a la base de datos: ", error);
     }
 }
