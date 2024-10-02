@@ -41,3 +41,23 @@ export async function getUserService(id) {
         console.error("Error al obtener el usuario:", error);
     }
 }
+
+export async function updateUserService(id, dataUser) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+        
+        await userRepository.update(id, dataUser);
+    } catch (error) {
+        console.error("Error al actualizar el usuario:", error);
+    }
+}
+export async function deleteUserService(dataUser) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+        
+        const userDeleted = await userRepository.remove(dataUser);
+        return userDeleted;
+    } catch (error) {
+        console.error("Error al eliminar el usuario:", error);
+    }
+}
