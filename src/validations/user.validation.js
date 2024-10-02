@@ -27,7 +27,8 @@ export const userBodyValidation = Joi.object({
     rut: Joi.string()
         .min(9)
         .max(12)
-        .pattern(/^\d{1,2}(\.\d{3}){2}-[\dkK]$|^\d{7,8}-[\dkK]$/)
+        //.pattern(/^\d{1,2}(\.\d{3}){2}-[\dkK]$|^\d{7,8}-[\dkK]$/)
+        .pattern(/^(?:[1-9]\d{6}|[1-2]\d{7}|[1-9]\d{0,1}(\.\d{3}){2})-[\dkK]$/)
         .required()
         .messages({
             "string.empty": "El rut no puede estar vacío.",
@@ -35,11 +36,11 @@ export const userBodyValidation = Joi.object({
             "string.base": "El rut debe ser de tipo string.",
             "string.min": "El rut debe tener como mínimo 9 caracteres.",
             "string.max": "El rut debe tener como máximo 12 caracteres",
-            "string.pattern.base": "El rut debe ser con el formato xx.xxx.xxx-x o xxxxxxxx-x"
+            "string.pattern.base": "El rut debe ser con el formato xx.xxx.xxx-x o xxxxxxxx-x, entre los valores 1.000.000-0 y 29.999.999-9 o 1000000-0 y 29999999-9."
         }),
     email: Joi.string()
         .min(15)
-        .max(30)
+        .max(45)
         .required()
         .email()
         .messages({
@@ -47,7 +48,7 @@ export const userBodyValidation = Joi.object({
             "any.required": "El email es obligatorio",
             "string.base": "El email debe tener formato con dominio apropiado.",
             "string.min": "El email debe tener como mínimo 15 caracteres.",
-            "string.max": "El email debe tener como máximo 30 caracteres",
+            "string.max": "El email debe tener como máximo 45 caracteres",
         })
         .custom(domainEmailValidator, "Validación dominio email"),
 });

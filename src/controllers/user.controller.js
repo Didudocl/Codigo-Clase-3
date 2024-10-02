@@ -2,7 +2,8 @@
 import User from '../entity/user.entity.js';
 import { AppDataSource } from '../config/configDb.js';
 import { userBodyValidation } from '../validations/user.validation.js';
-import { createUserService, getUserService } from '../services/user.service.js';
+//Agregar los archivos de servicios
+import { createUserService, getUserService, getUsersService, updateUserService, deleteUserService } from '../services/user.service.js';
 
 
 export async function createUser(req, res) {
@@ -51,9 +52,11 @@ export async function getUser(req, res) {
 
 export async function getUsers(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
+        //const userRepository = AppDataSource.getRepository(User);
 
-        const users = await userRepository.find();
+        //const users = await userRepository.find();
+        //Se cambia la función de llamada, porque 
+        const users = await getUsersService();
 
         if(!users || users.length === 0) {
             return res.status(404).json({
@@ -73,14 +76,24 @@ export async function getUsers(req, res) {
 
 export async function updateUser(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
+        //const userRepository = AppDataSource.getRepository(User);
 
         const id = req.params.id;
         const user = req.body;
 
-        const userFound = await userRepository.findOne({
-            where: {id}
-        });
+        // const userFound = await userRepository.findOne({
+        //     where: {id}
+        // });
+        //Se consigue value y error mediante la validación de los datos
+        const { value, error } = userBodyValidation.validate(user);
+
+        if(error){ return res.status(400).json({
+            message: "Error validación de datos",
+            details: error.message
+            });
+        }
+
+        const userFound = await getUserService(id);
 
         if(!userFound) {
             return res.status(404).json({
@@ -89,18 +102,21 @@ export async function updateUser(req, res) {
             });
         }
 
-        await userRepository.update(id, user);
+        //await userRepository.update(id, user);
+        await updateUserService(id, value);
 
-        const userData = await userRepository.findOne({
-            where: [{
-                id: id
-            }]
-        });
+        // const userData = await userRepository.findOne({
+        //     where: [{
+        //         id: id
+        //     }]
+        // });
+        const userData = await getUserService(id);
 
         res.status(200).json({
             message: "Usuario actualizado correctamente",
             data: userData
-        })
+        });
+
     } catch (error) {
         console.error("Error al actualizar un usuario: ", error);
         res.status(500).json({ message: "Error interno en el servidor" });
@@ -109,13 +125,15 @@ export async function updateUser(req, res) {
 
 export async function deleteUser(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
+        //Actualizar llamadas en vez del repositorio a la función de servicios..
+        //const userRepository = AppDataSource.getRepository(User);
 
         const id = req.params.id;
 
-        const userFound = await userRepository.findOne({
-            where: {id}
-        });
+        // const userFound = await userRepository.findOne({
+        //     where: {id}
+        // });
+        const userFound = await getUserService(id);
 
         if(!userFound) {
             return res.status(404).json({
@@ -124,8 +142,8 @@ export async function deleteUser(req, res) {
             });
         }
 
-        const userDeleted = await userRepository.remove(userFound);
-
+        //const userDeleted = await userRepository.remove(userFound);
+        const userDeleted = await deleteUserService(id);
         res.status(200).json({
             message: "Usuario eliminado correctamente",
             data: userDeleted
