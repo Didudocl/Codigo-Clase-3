@@ -39,7 +39,7 @@ export const userBodyValidation = Joi.object({
         }),
     email: Joi.string()
         .min(15)
-        .max(30)
+        .max(60)
         .required()
         .email()
         .messages({
