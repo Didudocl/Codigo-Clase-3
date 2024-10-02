@@ -41,3 +41,68 @@ export async function getUserService(id) {
         console.error("Error al obtener el usuario:", error);
     }
 }
+
+export async function getUsersService() {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const users = await userRepository.find();
+
+        if (!users || users.length === 0) {
+            return null;
+        }
+
+        users.forEach(user => {
+            user.createdAt = formatToLocalTime(user.createdAt);
+            user.updatedAt = formatToLocalTime(user.updatedAt);
+        });
+
+        return users;
+    } catch (error) {
+        console.error("Error al obtener los usuarios:", error);
+    }
+}
+
+export async function updateUserService(id, dataUser) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const userFound = await userRepository.findOne({
+            where: { id }
+        });
+
+        if (!userFound) {
+            return null;
+        }
+
+        await userRepository.update(id, dataUser);
+
+        const userUpdated = await userRepository.findOne({
+            where: { id }
+        });
+
+        return userUpdated;
+    } catch (error) {
+        console.error("Error al actualizar el usuario:", error);
+    }
+}
+
+export async function deleteUserService(id) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const userFound = await userRepository.findOne({
+            where: { id }
+        });
+
+        if (!userFound) {
+            return null;
+        }
+
+        const userDeleted = await userRepository.remove(userFound);
+
+        return userDeleted;
+    } catch (error) {
+        console.error("Error al eliminar el usuario:", error);
+    }
+}
