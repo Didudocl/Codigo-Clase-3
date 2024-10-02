@@ -25,18 +25,18 @@ export const userBodyValidation = Joi.object({
             "string.pattern.base": "El nombre completo permite solo letras de la a-z."
         }),
     rut: Joi.string()
-        .min(9)
-        .max(12)
-        .pattern(/^\d{1,2}(\.\d{3}){2}-[\dkK]$|^\d{7,8}-[\dkK]$/)
-        .required()
-        .messages({
-            "string.empty": "El rut no puede estar vacío.",
-            "any.required": "El rut es obligatorio",
-            "string.base": "El rut debe ser de tipo string.",
-            "string.min": "El rut debe tener como mínimo 9 caracteres.",
-            "string.max": "El rut debe tener como máximo 12 caracteres",
-            "string.pattern.base": "El rut debe ser con el formato xx.xxx.xxx-x o xxxxxxxx-x"
-        }),
+    .min(9)
+    .max(12)
+    .pattern(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/)
+    .required()
+    .messages({
+        "string.empty": "El rut no puede estar vacío.",
+        "any.required": "El rut es obligatorio",
+        "string.base": "El rut debe ser de tipo string.",
+        "string.min": "El rut debe tener como mínimo 9 caracteres.",
+        "string.max": "El rut debe tener como máximo 12 caracteres",
+        "string.pattern.base": "El rut debe ser con el formato xx.xxx.xxx-x o xxxxxxxx-x, entre 1.000.000-0 y 29.999.999-9 ."
+    }),
     email: Joi.string()
         .min(15)
         .max(30)
