@@ -2,9 +2,9 @@
 import Joi from 'joi';
 
 const domainEmailValidator = (value, helper) => {
-    if(!value.endsWith("@gmail.cl")) {
+    if(!value.endsWith("@gmail.com")) {
         return helper.message(
-            "El email debe ser del dominio @gmail.cl"
+            "El email debe ser del dominio @gmail.com"
         )
     }
     return value;
@@ -27,7 +27,7 @@ export const userBodyValidation = Joi.object({
     rut: Joi.string()
         .min(9)
         .max(12)
-        .pattern(/^\d{1,2}(\.\d{3}){2}-[\dkK]$|^\d{7,8}-[\dkK]$/)
+        .pattern(/^[1-2]\d{1,2}(\.\d{3}){2}-[\dkK]$|^\d{7,8}-[\dkK]$/)
         .required()
         .messages({
             "string.empty": "El rut no puede estar vacío.",
@@ -38,7 +38,7 @@ export const userBodyValidation = Joi.object({
             "string.pattern.base": "El rut debe ser con el formato xx.xxx.xxx-x o xxxxxxxx-x"
         }),
     email: Joi.string()
-        .min(15)
+        .min(11)
         .max(30)
         .required()
         .email()

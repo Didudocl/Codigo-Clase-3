@@ -2,7 +2,8 @@
 import User from '../entity/user.entity.js';
 import { AppDataSource } from '../config/configDb.js';
 import { userBodyValidation } from '../validations/user.validation.js';
-import { createUserService, getUserService } from '../services/user.service.js';
+import { createUserService, getUserService, getUsersService, updateUserService } from '../services/user.service.js';
+
 
 
 export async function createUser(req, res) {
@@ -20,7 +21,7 @@ export async function createUser(req, res) {
         res.status(201).json({
             message: "Usuario creado exitosamente",
             data: userSaved
-        })
+        }) 
     } catch (error) {
         console.error("Error al crear un usuario, el error es: ", error);
     }
@@ -44,6 +45,7 @@ export async function getUser(req, res) {
             message: "Usuario encontrado",
             data: userFound
         })
+        console.log(userFound)
     } catch (error) {
         console.error('Error al obtener un usuario, el error: ', error);
     }
@@ -51,9 +53,9 @@ export async function getUser(req, res) {
 
 export async function getUsers(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
-
-        const users = await userRepository.find();
+        //const userRepository = AppDataSource.getRepository(User);
+        //const users = await userRepository.find();
+        const users = await getUsersService();
 
         if(!users || users.length === 0) {
             return res.status(404).json({
@@ -66,6 +68,7 @@ export async function getUsers(req, res) {
             message: "Usuarios encontrados",
             data: users
         })
+        console.log(users)
     } catch (error) {
         console.error('Error al obtener un usuarios, el error: ', error);
     }
@@ -73,14 +76,16 @@ export async function getUsers(req, res) {
 
 export async function updateUser(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
+        //const userRepository = AppDataSource.getRepository(User);
 
         const id = req.params.id;
         const user = req.body;
 
-        const userFound = await userRepository.findOne({
-            where: {id}
-        });
+        const {value, error} = userBodyValidation.validate(user);
+        const userFound = await updateUserService(id, user);
+        //const userFound = await userRepository.findOne({
+            //where: {id}
+        //});
 
         if(!userFound) {
             return res.status(404).json({
@@ -89,17 +94,9 @@ export async function updateUser(req, res) {
             });
         }
 
-        await userRepository.update(id, user);
-
-        const userData = await userRepository.findOne({
-            where: [{
-                id: id
-            }]
-        });
-
         res.status(200).json({
             message: "Usuario actualizado correctamente",
-            data: userData
+            data: userFound
         })
     } catch (error) {
         console.error("Error al actualizar un usuario: ", error);
@@ -135,3 +132,14 @@ export async function deleteUser(req, res) {
         res.status(500).json({ message: "Error interno en el servidor" });
     }
 }
+
+//Tarea 3
+/*
+    - [X] getUsersService
+    - [X] updateUserService
+    - [X] deleteUserService
+
+    - [X] validacion updateUser
+    - [X] expresion regular rut
+
+*/
