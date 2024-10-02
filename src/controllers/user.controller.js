@@ -71,12 +71,24 @@ export async function getUsers(req, res) {
     }
 }
 
+function validateRut(rut) {
+    const rutPattern = /^[0-9]+-[0-9Kk]$/;
+    return rutPattern.test(rut);
+}
+
 export async function updateUser(req, res) {
     try {
         const userRepository = AppDataSource.getRepository(User);
 
         const id = req.params.id;
         const user = req.body;
+
+        if (!validateRut(user.rut)) {
+            return res.status(400).json({
+                message: "RUT inválido",
+                data: null
+            });
+        }
 
         const userFound = await userRepository.findOne({
             where: {id}
@@ -92,15 +104,13 @@ export async function updateUser(req, res) {
         await userRepository.update(id, user);
 
         const userData = await userRepository.findOne({
-            where: [{
-                id: id
-            }]
+            where: [ { id: id } ]
         });
 
         res.status(200).json({
             message: "Usuario actualizado correctamente",
             data: userData
-        })
+        });
     } catch (error) {
         console.error("Error al actualizar un usuario: ", error);
         res.status(500).json({ message: "Error interno en el servidor" });
