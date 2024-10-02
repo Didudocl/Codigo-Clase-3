@@ -1,7 +1,7 @@
 import express, { json } from 'express'; // Module
 import indexRoutes from './routes/index.routes.js';
 import { PORT, HOST } from './config/configEnv.js';
-import { connectDB } from './config/configDb.js';
+import { connectDB } from './config/configDB.js';
 
 async function setupServer() {
     try {

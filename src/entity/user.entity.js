@@ -1,13 +1,14 @@
 "use strict";
+
 import { EntitySchema } from "typeorm";
 
 const UserSchema = new EntitySchema({
     name: "User",
-    tableName: "users",
-    columns: {
-        id: {
+    tableName: "user",
+    columns:{
+        id:{
             type: "int",
-            primary: true,
+            primary:true,
             generated: true,
         },
         nombreCompleto: {
@@ -28,17 +29,17 @@ const UserSchema = new EntitySchema({
             unique: true,
         },
         createdAt: {
-            type: "timestamp with time zone",
+            type: "time with time zone",
             default: () => "CURRENT_TIMESTAMP",
             nullable: false,
         },
         updatedAt: {
-            type: "timestamp with time zone",
+            type: "time with time zone",
             default: () => "CURRENT_TIMESTAMP",
             onUpdate: "CURRENT_TIMESTAMP",
             nullable: false,
-        }
     }
+}
 });
 
 export default UserSchema;

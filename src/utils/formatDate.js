@@ -1,3 +1,3 @@
-export function formatToLocalTime(date) {
-    return new Date(date).toLocaleString('es-CL', { timeZone: 'America/Santiago' });
+export function formatToLocalTIme(date){
+    return new Date(date).toLocaleString('es-CL',{timeZone:'America/Santiago'});
 }
