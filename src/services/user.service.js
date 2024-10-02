@@ -24,20 +24,78 @@ export async function createUserService(dataUser) {
 export async function getUserService(id) {
     try {
         const userRepository = AppDataSource.getRepository(User);
-
-        const userFound = await userRepository.findOne({
-            where: { id }
+        const users = await userRepository.find();
+        
+        users.forEach(user => {
+            user.createdAt = formatToLocalTime(user.createdAt);
+            user.updatedAt = formatToLocalTime(user.updatedAt);
         });
+        console.log("usuarios encontrados", users);
 
-        if (!userFound) {
+        return users;
+    } catch (error) {
+        console.error("Error al obtener los usuarios:", error);
+        throw new Error("Error al obtener los usuarios");
+    }
+      
+}
+
+export async function getUsersService() {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+        const users = await userRepository.find();
+        
+        users.forEach(user => {
+            user.createdAt = formatToLocalTime(user.createdAt);
+            user.updatedAt = formatToLocalTime(user.updatedAt);
+        });
+        console.log("usuarios encontrados", users);
+
+        return users;
+    } catch (error) {
+        console.error("Error al obtener los usuarios:", error);
+    }
+}
+
+export async function updateUserService(id, dataUser) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+        const userToUpdate = await userRepository.findOne({ where: { id } });
+
+        if (!userToUpdate) {
             return null;
         }
 
-        userFound.createdAt = formatToLocalTime(userFound.createdAt);
-        userFound.updatedAt = formatToLocalTime(userFound.updatedAt);
+        userRepository.merge(userToUpdate, dataUser);
+        const updatedUser = await userRepository.save(userToUpdate);
 
-        return userFound;
+        updatedUser.createdAt = formatToLocalTime(updatedUser.createdAt);
+        updatedUser.updatedAt = formatToLocalTime(updatedUser.updatedAt);
+
+        return updatedUser;
     } catch (error) {
-        console.error("Error al obtener el usuario:", error);
+        console.error("Error al actualizar el usuario:", error);
+    }
+}
+
+
+export async function deleteUserService(id) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+   
+        const userToDelete = await userRepository.findOne({
+            where: { id }
+        });
+    
+        if (!userToDelete) {
+            return null;
+        }
+    
+        await userRepository.remove(userToDelete);
+    
+        return userToDelete;
+    } catch (error) {
+        console.error('Error al eliminar un usuario: ', error);
+        throw error;
     }
 }
