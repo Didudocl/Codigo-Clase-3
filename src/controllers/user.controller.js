@@ -1,16 +1,20 @@
+// ----- LOGICA DE NEGOCIOS -----
+
 "use strict";
 import User from '../entity/user.entity.js';
 import { AppDataSource } from '../config/configDb.js';
-import { userBodyValidation } from '../validations/user.validation.js';
-import { createUserService, getUserService } from '../services/user.service.js';
+import { idValidation, userBodyValidation } from '../validations/user.validation.js';
+import { createUserService, getUserService, updateUserService } from '../services/user.service.js';
 
 
 export async function createUser(req, res) {
     try {
         const user = req.body;
 
-        const { value, error } = userBodyValidation.validate(user);
+        //validamos el body del request
+        const { value, error } = userBodyValidation.validate(user); 
 
+        // si hay un error en la validación, retornamos un mensaje de error
         if(error) return res.status(400).json({
             message: error.message
         })
@@ -29,7 +33,14 @@ export async function createUser(req, res) {
 export async function getUser(req, res) {
     try {
 
+        //validamos el id pasado por parámetro del request
         const id = req.params.id;
+        const { error: idError } = idValidation.validate({ id });
+
+        // si hay un error en la validación del id, retornamos un mensaje de error
+        if(idError) return res.status(400).json({
+            message: idError.message
+        })
 
         const userFound = await getUserService(id);
 
@@ -51,9 +62,7 @@ export async function getUser(req, res) {
 
 export async function getUsers(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
-
-        const users = await userRepository.find();
+        const users = await getUserService();
 
         if(!users || users.length === 0) {
             return res.status(404).json({
@@ -73,58 +82,63 @@ export async function getUsers(req, res) {
 
 export async function updateUser(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
-
+        //validamos el id pasado por parámetro del request
         const id = req.params.id;
+        const { error: idError } = idValidation.validate({ id });
+
+        // si hay un error en la validación del id, retornamos un mensaje de error
+        if(idError) return res.status(400).json({
+            message: idError.message
+        })
+
+        //validamos el body del request
         const user = req.body;
+        const { value, error_body } = userBodyValidation.validate(user);
+        
+        // si hay un error en la validación del body, retornamos un mensaje de error
+        if(error_body) return res.status(400).json({
+            message: error_body.message
+        })
+        
+        // actualizamos el usuario a través del servicio updateUserService
+        const userUpdated = await updateUserService(id, value);
 
-        const userFound = await userRepository.findOne({
-            where: {id}
-        });
-
-        if(!userFound) {
+        // Si el usuario no es encontrado, retornamos un error 404
+        if (!userUpdated) {
             return res.status(404).json({
-                message: "Usuario no encontrado",
-                data: null
+                message: "Usuario no encontrado"
             });
         }
-
-        await userRepository.update(id, user);
-
-        const userData = await userRepository.findOne({
-            where: [{
-                id: id
-            }]
-        });
-
         res.status(200).json({
             message: "Usuario actualizado correctamente",
-            data: userData
+            data: userUpdated
         })
+
     } catch (error) {
-        console.error("Error al actualizar un usuario: ", error);
         res.status(500).json({ message: "Error interno en el servidor" });
     }
 }
 
 export async function deleteUser(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
 
+        //validamos el id pasado por parámetro del request
         const id = req.params.id;
+        const { error: idError } = idValidation.validate({ id });
 
-        const userFound = await userRepository.findOne({
-            where: {id}
-        });
+        // si hay un error en la validación del id, retornamos un mensaje de error
+        if(idError) return res.status(400).json({
+            message: idError.message
+        })
 
-        if(!userFound) {
+        const userDeleted = await deleteUserService(id);
+
+        if(!userDeleted) {
             return res.status(404).json({
                 message: "Usuario no encontrado",
                 data: null
             });
         }
-
-        const userDeleted = await userRepository.remove(userFound);
 
         res.status(200).json({
             message: "Usuario eliminado correctamente",

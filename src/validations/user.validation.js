@@ -10,11 +10,25 @@ const domainEmailValidator = (value, helper) => {
     return value;
 }
 
+export const idValidation = Joi.object({
+    id: Joi.number()
+        .integer()
+        .positive()
+        .required()
+        .messages({
+            "number.base": "El id debe ser de tipo numérico.",
+            "number.integer": "El id debe ser un número entero.",
+            "number.positive": "El id debe ser un número positivo.",
+            "any.required": "El id es obligatorio."
+        })
+});
+
 export const userBodyValidation = Joi.object({
     nombreCompleto: Joi.string()
         .min(3)
         .max(30)
-        .pattern(new RegExp("^[a-zA-Z\\s]+$"))
+        // expresión regular que se usa para validar que solo sean letras y espacios
+        .pattern(new RegExp("^[a-zA-Z\\s]+$")) 
         .required()
         .messages({
             "string.empty": "El nombre completo no puede estar vacío.",
