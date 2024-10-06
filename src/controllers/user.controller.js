@@ -73,16 +73,24 @@ export async function getUsers(req, res) {
 
 export async function updateUser(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
+        const { value, error } = userBodyValidation.validate(req.body);
 
+        if (error) {
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+
+        const userRepository = AppDataSource.getRepository(User);
+        
         const id = req.params.id;
         const user = req.body;
 
         const userFound = await userRepository.findOne({
-            where: {id}
+            where: { id }
         });
 
-        if(!userFound) {
+        if (!userFound) {
             return res.status(404).json({
                 message: "Usuario no encontrado",
                 data: null
@@ -92,15 +100,13 @@ export async function updateUser(req, res) {
         await userRepository.update(id, user);
 
         const userData = await userRepository.findOne({
-            where: [{
-                id: id
-            }]
+            where: { id }
         });
 
         res.status(200).json({
             message: "Usuario actualizado correctamente",
             data: userData
-        })
+        });
     } catch (error) {
         console.error("Error al actualizar un usuario: ", error);
         res.status(500).json({ message: "Error interno en el servidor" });
