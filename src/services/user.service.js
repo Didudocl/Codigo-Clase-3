@@ -41,3 +41,64 @@ export async function getUserService(id) {
         console.error("Error al obtener el usuario:", error);
     }
 }
+
+export async function getUsersService() {
+    try{
+        const userRepository = AppDataSource.getRepository(User);
+        const users = await userRepository.find();
+
+        if(!users || users.length === 0) {
+            return null;
+        }
+
+        users.forEach(user => {
+            user.createdAt = formatToLocalTime(user.createdAt);
+            user.updatedAt = formatToLocalTime(user.updatedAt);
+        });
+        return users;
+    }catch (error){
+        console.error("Error al obtener los usuarios: ", error);
+    }
+}
+
+export async function updateUserService(id, userData) {
+    
+    try{
+        const userRepository = AppDataSource.getRepository(User);
+        const userFound = await userRepository.findOne({ where: { id } });
+        if (!userFound) {
+            return null;
+        }
+        console.log("Usuario encontrado: ", userFound); // Log para verificar si se encuentra el usuario
+        await userRepository.update(id, userData);
+        console.log("Datos actualizados: ", userData); // Log para verificar los nuevos datos
+
+        const updatedUser = await userRepository.findOne({ where: { id } });
+        console.log("Usuario actualizado: ", updatedUser); // Log para verificar el usuario actualizado
+        return updatedUser;
+    }catch(error){
+        console.error("Error al actualizar el usuario: ", error);
+        throw new Error("Error actualizando el usuario");
+    }
+    
+}
+
+
+export async function deleteUserService(id) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const userFound = await userRepository.findOne({ where: { id } });
+
+        if (!userFound) {
+            return null;
+        }
+
+        const userDeleted = await userRepository.remove(userFound);
+
+        return userDeleted;
+    } catch (error) {
+        console.error("Error al eliminar un usuario:", error);
+        throw error;
+    }
+}
