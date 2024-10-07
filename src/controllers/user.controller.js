@@ -78,29 +78,35 @@ export async function updateUser(req, res) {
         const id = req.params.id;
         const user = req.body;
 
+        const { value, error } = userBodyValidation.validate(user);
+
+        if (error) {
+            return res.status(400).json({
+                message: error.message
+            });
+        }
+
         const userFound = await userRepository.findOne({
-            where: {id}
+            where: { id }
         });
 
-        if(!userFound) {
+        if (!userFound) {
             return res.status(404).json({
                 message: "Usuario no encontrado",
                 data: null
             });
         }
 
-        await userRepository.update(id, user);
+        await userRepository.update(id, value);
 
         const userData = await userRepository.findOne({
-            where: [{
-                id: id
-            }]
+            where: { id }
         });
 
         res.status(200).json({
             message: "Usuario actualizado correctamente",
             data: userData
-        })
+        });
     } catch (error) {
         console.error("Error al actualizar un usuario: ", error);
         res.status(500).json({ message: "Error interno en el servidor" });
