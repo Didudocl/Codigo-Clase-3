@@ -3,7 +3,7 @@ import User from '../entity/user.entity.js';
 import { AppDataSource } from '../config/configDb.js';
 import { userBodyValidation } from '../validations/user.validation.js';
 import { createUserService, getUserService } from '../services/user.service.js';
-
+import updateUserService from '../services/updateUserService';
 
 export async function createUser(req, res) {
     try {
@@ -73,37 +73,30 @@ export async function getUsers(req, res) {
 
 export async function updateUser(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
+        const { id } = req.params;
+        const { nombre, apellido, rut, email } = req.body;
 
-        const id = req.params.id;
-        const user = req.body;
-
-        const userFound = await userRepository.findOne({
-            where: {id}
-        });
-
-        if(!userFound) {
-            return res.status(404).json({
-                message: "Usuario no encontrado",
-                data: null
-            });
+        // Validación de campos
+        if (!nombre || !apellido || !rut || !email) {
+            return res.status(400).json({ error: 'Todos los campos son requeridos' });
         }
 
-        await userRepository.update(id, user);
+        // Validación de RUT (usando la expresión regular corregida)
+        const rutRegex = /^([1-2](?:\d\.\d{3}){2}-[\dkK]|[1-9](?:\d\.\d{3}){2}-[\dkK])$/;
+        if (!rutRegex.test(rut)) {
+            return res.status(400).json({ error: 'Formato de RUT inválido' });
+        }
 
-        const userData = await userRepository.findOne({
-            where: [{
-                id: id
-            }]
-        });
+        // Validación de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Formato de email inválido' });
+        }
 
-        res.status(200).json({
-            message: "Usuario actualizado correctamente",
-            data: userData
-        })
+        const updatedUser = await updateUserService(id, { nombre, apellido, rut, email });
+        res.json(updatedUser);
     } catch (error) {
-        console.error("Error al actualizar un usuario: ", error);
-        res.status(500).json({ message: "Error interno en el servidor" });
+        res.status(500).json({ error: error.message });
     }
 }
 
