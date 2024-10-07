@@ -2,7 +2,7 @@
 import User from '../entity/user.entity.js';
 import { AppDataSource } from '../config/configDb.js';
 import { userBodyValidation } from '../validations/user.validation.js';
-import { createUserService, getUserService } from '../services/user.service.js';
+import { createUserService, getUserService, getUsersService, updateUserService, deleteUserService } from '../services/user.service.js';
 
 
 export async function createUser(req, res) {
@@ -51,9 +51,7 @@ export async function getUser(req, res) {
 
 export async function getUsers(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
-
-        const users = await userRepository.find();
+        const users = await getUserService();
 
         if(!users || users.length === 0) {
             return res.status(404).json({
@@ -73,14 +71,10 @@ export async function getUsers(req, res) {
 
 export async function updateUser(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
-
         const id = req.params.id;
         const user = req.body;
 
-        const userFound = await userRepository.findOne({
-            where: {id}
-        });
+        const userFound = await updateUserService(id, user);
 
         if(!userFound) {
             return res.status(404).json({
@@ -109,13 +103,9 @@ export async function updateUser(req, res) {
 
 export async function deleteUser(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
-
         const id = req.params.id;
 
-        const userFound = await userRepository.findOne({
-            where: {id}
-        });
+        const userFound = await deleteUserService(id);
 
         if(!userFound) {
             return res.status(404).json({
