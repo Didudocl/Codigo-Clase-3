@@ -3,6 +3,7 @@ import User from '../entity/user.entity.js';
 import { AppDataSource } from '../config/configDb.js';
 import { formatToLocalTime } from '../utils/formatDate.js'
 
+
 export async function createUserService(dataUser) {
     try {
         const userRepository = AppDataSource.getRepository(User);
@@ -40,4 +41,48 @@ export async function getUserService(id) {
     } catch (error) {
         console.error("Error al obtener el usuario:", error);
     }
+}
+
+export async function getUsersService() {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const users = await userRepository.find();
+        
+        users.forEach(user => {
+            user.createdAt = formatToLocalTime(user.createdAt);
+            user.updatedAt = formatToLocalTime(user.updatedAt);
+        });
+        return users;
+
+
+    } catch (error) {
+        console.error("Error al obtener los usuarios:", error);
+    }
+}
+
+export async function updateUserService(id, user) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        userRepository.update(id, user);
+
+    } catch (error) {
+        console.error("Error al actualizar el usuario dentro:", error);
+    }
+    
+}
+
+export async function deleteUserService(id, userFound) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+       
+        const userDeleted = await userRepository.remove(userFound);
+        return userDeleted
+
+    } catch (error) {
+        console.error("Error al eliminar el usuario:", error);
+    }
+    
 }
