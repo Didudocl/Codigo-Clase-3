@@ -2,7 +2,10 @@
 import User from '../entity/user.entity.js';
 import { AppDataSource } from '../config/configDb.js';
 import { userBodyValidation } from '../validations/user.validation.js';
-import { createUserService, getUserService, getUsersService, updateUserService } from '../services/user.service.js';
+import { 
+    createUserService, getUserService, getUsersService, updateUserService,
+    deleteUserService
+} from '../services/user.service.js';
 
 
 
@@ -106,27 +109,19 @@ export async function updateUser(req, res) {
 
 export async function deleteUser(req, res) {
     try {
-        const userRepository = AppDataSource.getRepository(User);
-
         const id = req.params.id;
-
-        const userFound = await userRepository.findOne({
-            where: {id}
-        });
-
-        if(!userFound) {
+        let userDeleted = deleteUserService(id)
+        if(userDeleted === null) {
             return res.status(404).json({
                 message: "Usuario no encontrado",
                 data: null
             });
         }
-
-        const userDeleted = await userRepository.remove(userFound);
-
-        res.status(200).json({
+        return res.status(200).json({
             message: "Usuario eliminado correctamente",
             data: userDeleted
         })
+
     } catch (error) {
         console.error("Error al eliminar un usuario: ", error);
         res.status(500).json({ message: "Error interno en el servidor" });

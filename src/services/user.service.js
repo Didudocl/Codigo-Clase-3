@@ -47,8 +47,8 @@ export async function getUsersService() {
         //find devuelve una promesa
         const usersFound = await userRepository.find();
         for(let i = 0; i < usersFound.length; i++) {
-            usersFound[i].createdAt = formatToLocalTime(usersFound[i].createdAt);
-            usersFound[i].updatedAt = formatToLocalTime(usersFound[i].updatedAt);
+            usersFound[i].createdAt = formatToLocalTime(usersFound.createdAt);
+            usersFound[i].updatedAt = formatToLocalTime(usersFound.updatedAt);
         }
 
         return usersFound;
@@ -87,10 +87,12 @@ export async function updateUserService(id, dataUser) {
 export async function deleteUserService(id) {
     try {
         const userRepository = AppDataSource.getRepository(User)
+        const userFound = await userRepository.findOne({
+            where: {id}
+        });
         //no muestra en la documentacion valor de retorno
         userRepository.delete(id);
-        //find devuelve una promesa
-        return userSaved;
+        return userFound;
     }catch (error) {
         console.error("Error al obtener el usuario:", error);
     }
