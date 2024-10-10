@@ -27,7 +27,7 @@ export const userBodyValidation = Joi.object({
     rut: Joi.string()
         .min(9)
         .max(12)
-        .pattern(/^([1-2]{1}[0-9]{1}|[1-9]{1})\.\d{3}\.\d{3}-[\dkK]$/)
+        .pattern(/^([1-2][0-9]|[1-9])(\.\d{3}\.\d{3}|\d{6})-[\dkK]$/)
         .required()
         .messages({
             "string.empty": "El rut no puede estar vacío.",
