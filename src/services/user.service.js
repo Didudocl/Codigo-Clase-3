@@ -41,3 +41,61 @@ export async function getUserService(id) {
         console.error("Error al obtener el usuario:", error);
     }
 }
+
+export async function getUsersService() {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const users = await userRepository.find();
+
+        if (!users || users.length === 0) {
+            return [];
+        }
+
+        users.forEach(user => {
+            user.createdAt = formatToLocalTime(user.createdAt);
+            user.updatedAt = formatToLocalTime(user.updatedAt);
+        });
+
+        return users;
+    } catch (error) {
+        console.error('Error al obtener los usuarios: ', error);
+        throw new Error('No se pudo obtener la lista de usuarios');
+    }
+}
+
+export async function updateUserService(id, data) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        let user = await userRepository.findOne({ where: { id } });
+
+        if (!user) {
+            throw new Error('Usuario no encontrado');
+        }
+
+        userRepository.merge(user, data);
+        const updatedUser = await userRepository.save(user);
+
+        return updatedUser;
+    } catch (error) {
+        console.error('Error al actualizar el usuario: ', error);
+    }
+}
+
+export async function deleteUserService(id) {
+    try {
+        const userRepository = AppDataSource.getRepository(User);
+
+        const user = await userRepository.findOne({ where: { id } });
+
+        if (!user) {
+            throw new Error('Usuario no encontrado');
+        }
+
+        await userRepository.remove(user);
+        return user;
+    } catch (error) {
+        console.error('Error al eliminar el usuario: ', error);
+    }
+}
